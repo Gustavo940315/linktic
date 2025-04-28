@@ -1,0 +1,27 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: API-GATEWAY
+  cloud:
+    gateway:
+      routes:
+        - id: ms-products
+          uri: lb://MS-PRODUCTS
+          predicates:
+            - Path=/api/v1/product/**
+        - id: ms-inventory
+          uri: lb://MS-INVENTORY
+          predicates:
+            - Path=/api/v1/inventory/**
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka}

@@ -1,0 +1,39 @@
+name: Build MS Inventory Image
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-ms-inventory:
+    runs-on: ubuntu-latest
+    environment: env_prod
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Make gradlew executable for MS-Inventory
+        run: chmod +x ./ms-inventory/gradlew
+
+      - name: Build MS-Inventory without tests
+        run: |
+          cd ms-inventory
+          ./gradlew build -x test
+
+      - name: Build Docker Image for MS-Inventory
+        run: |
+          cd ms-inventory
+          docker build --no-cache -t ingflorez940315/img_ms_inventory_2025_repo:latest .
+
+      - name: Push Docker Image to Docker Hub
+        run: |
+          docker push ingflorez940315/img_ms_inventory_2025_repo:latest

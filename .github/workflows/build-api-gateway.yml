@@ -1,0 +1,39 @@
+name: Build API Gateway Image
+
+on:
+  workflow_dispatch:  # Este flujo solo se ejecuta cuando es disparado manualmente
+
+jobs:
+  build-api-gateway:
+    runs-on: ubuntu-latest
+    environment: env_prod
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Make gradlew executable for API Gateway
+        run: chmod +x ./ms-api-gateway/gradlew
+
+      - name: Build API Gateway without tests
+        run: |
+          cd ms-api-gateway
+          ./gradlew build -x test
+
+      - name: Build Docker Image for API Gateway
+        run: |
+          cd ms-api-gateway
+          docker build --no-cache -t ingflorez940315/img_gateway_2025_repo:latest .
+
+      - name: Push Docker Image to Docker Hub
+        run: |
+          docker push ingflorez940315/img_gateway_2025_repo:latest

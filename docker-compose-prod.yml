@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  eureka-server:
+    image: ingflorez940315/eureka_2025_repo:latest
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    environment:
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=false
+      - EUREKA_CLIENT_FETCH_REGISTRY=false
+      - EUREKA_SERVER_URL=${EUREKA_SERVER_URL}
+    networks:
+      - spring-network
+
+  ms-products:
+    image: ingflorez940315/img_ms_product_2025_repo:latest
+    container_name: ms-products
+    ports:
+      - "8080:8080"
+    depends_on:
+      - eureka-server
+    environment:
+      - EUREKA_SERVER_URL=${EUREKA_SERVER_URL}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_URL=${DB_URL}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION}
+      - AWS_QUEUE_CREATE_URL=${AWS_QUEUE_CREATE_URL} 
+      - AWS_QUEUE_DELETE_URL=${AWS_QUEUE_DELETE_URL}
+    networks:
+      - spring-network
+
+  api-gateway:
+    image: ingflorez940315/img_gateway_2025_repo:latest
+    container_name: api-gateway
+    ports:
+      - "8084:8084"
+    depends_on:
+      - eureka-server
+    environment:
+      - EUREKA_SERVER_URL=${EUREKA_SERVER_URL}
+      - DB_USER=${DB_USER}
+    networks:
+      - spring-network
+
+  ms-inventory:
+    image: ingflorez940315/img_ms_inventory_2025_repo:latest
+    container_name: ms-inventory
+    ports:
+      - "8083:8083"
+    depends_on:
+      - eureka-server
+    environment:
+      - EUREKA_SERVER_URL=${EUREKA_SERVER_URL}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_URL=${DB_URL}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION}
+      - AWS_QUEUE_CREATE_NAME=${AWS_QUEUE_CREATE_NAME}
+      - AWS_QUEUE_DELETE_NAME=${AWS_QUEUE_DELETE_NAME}
+    networks:
+      - spring-network
+
+networks:
+  spring-network:
+    driver: bridge

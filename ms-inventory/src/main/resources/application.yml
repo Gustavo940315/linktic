@@ -1,0 +1,53 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: MS-INVENTORY
+  datasource:
+    url: jdbc:mysql://${DB_URL}/db-inventory
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+  cloud:
+    aws:
+      credentials:
+        access-key: ${AWS_ACCESS_KEY_ID}
+        secret-key: ${AWS_SECRET_ACCESS_KEY}
+      region:
+        static: ${AWS_REGION}
+      sqs:
+        enabled: true
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  show-actuator: false
+  packages-to-scan: com.linktic.ms.inventory.infrastructure.rest.router
+
+handle:
+  exception:
+    business: Business error occurred
+    system: System error occurred
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL}
+    registry-fetch-interval-seconds: 5
+
+aws:
+  region: ${AWS_REGION:us-east-2}
+  sqs:
+    product-created-queue-name: ${AWS_QUEUE_CREATE_NAME}
+    product-deleted-queue-name: ${AWS_QUEUE_DELETE_NAME}

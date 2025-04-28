@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  eureka-server:
+    image: eureka-server
+    container_name: eureka-server
+    build:
+      context: ./ms-eureka
+    ports:
+      - "8761:8761"
+    environment:
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=false
+      - EUREKA_CLIENT_FETCH_REGISTRY=false
+    networks:
+      - spring-network
+
+  ms-products:
+    image: ms-products
+    container_name: ms-products
+    build:
+      context: ./ms-products
+    ports:
+      - "8080:8080"
+    depends_on:
+      - eureka-server
+    environment:
+      - EUREKA_SERVER_URL=http://eureka-server:8761/eureka
+    networks:
+      - spring-network
+
+  api-gateway:
+    image: api-gateway
+    container_name: api-gateway
+    build:
+      context: ./ms-api-gateway
+    ports:
+      - "8084:8084"
+    depends_on:
+      - eureka-server
+    environment:
+      - EUREKA_SERVER_URL=http://eureka-server:8761/eureka
+    networks:
+      - spring-network
+
+  ms-inventory:
+    image: ms-inventory
+    container_name: ms-inventory
+    build:
+      context: ./ms-inventory
+    ports:
+      - "8083:8083"
+    depends_on:
+      - eureka-server
+    environment:
+      - EUREKA_SERVER_URL=http://eureka-server:8761/eureka
+    networks:
+      - spring-network
+
+networks:
+  spring-network:
+    driver: bridge
