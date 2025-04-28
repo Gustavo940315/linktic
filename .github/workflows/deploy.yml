@@ -152,31 +152,19 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
 
-      - name: Create .env file from secret
+      - name: Copy Docker Compose to EC2
         run: |
-          echo "${{ secrets.ENV_SECRET }}" > .env
-          cat .env  # Verifica que el archivo .env se ha creado correctamente
-
-      - name: Copy Docker Compose and .env to EC2
-        run: |
-          echo "🔑 Copying Docker Compose and .env file to EC2"
+          echo "🔑 Copying Docker Compose file to EC2"
           scp -o StrictHostKeyChecking=no -i "${{ secrets.EC2_SSH_KEY }}" docker-compose-prod.yml ubuntu@18.189.194.225:/home/ubuntu/
-          scp -o StrictHostKeyChecking=no -i "${{ secrets.EC2_SSH_KEY }}" .env ubuntu@18.189.194.225:/home/ubuntu/
 
       - name: Connect to EC2 and Verify Connection
         run: |
           echo "🔑 SSH Connection to EC2"
           ssh -o StrictHostKeyChecking=no -i "${{ secrets.EC2_SSH_KEY }}" ubuntu@18.189.194.225 "echo 'Connection successful to EC2!'"
 
-      - name: Stop existing containers on EC2 (if any)
-        run: |
-          echo "🛑 Stopping existing containers on EC2"
-          ssh -o StrictHostKeyChecking=no -i "${{ secrets.EC2_SSH_KEY }}" ubuntu@18.189.194.225 "
-            sudo docker-compose -f /home/ubuntu/docker-compose-prod.yml down || true
-          "
-
       - name: Deploy Docker Compose on EC2
         run: |
           echo "🚀 Running Docker Compose on EC2"
           ssh -o StrictHostKeyChecking=no -i "${{ secrets.EC2_SSH_KEY }}" ubuntu@18.189.194.225 "
-            cd /home/ubuntu && sudo docker-compose --env-file .env -f docker-compose-prod.yml up -d
+            cd /home/ubuntu && sudo docker-compose -f docker-compose-prod.yml up -d
+          "
